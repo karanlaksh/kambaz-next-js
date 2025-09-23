@@ -3,6 +3,9 @@ export default function Labs() {
  return (
    <div id="wd-labs">
      <h1>Labs</h1>
+     <p>Name : Karan Lakshminarayanan</p>
+     <p>Section : 4</p>
+     <Link href = "https://github.com/karanlaksh/kambaz-next-js" id= "wd-github-link">Github</Link>
      <ul>
        <li>
          <Link href="/Labs/Lab1" id="wd-lab1-link">

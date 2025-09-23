@@ -100,46 +100,65 @@ export default function AssignmentEditor() {
           <td align="right" valign="top">
             <label htmlFor="wd-assign-to">Assign To</label>
           </td>
-          <td>
+        </tr>
+        <tr>
+          <td></td>
+             <td>
             <input id="wd-assign-to" defaultValue="Everyone" />
           </td>
         </tr>
         <br />
 
         <tr>
-          <td align="right" valign="top">
+          <td></td>
+          <td  valign="top">
             <label htmlFor="wd-due-date">Due</label>
           </td>
-          <td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
             <input id="wd-due-date" type="date" defaultValue="2024-05-13" />
           </td>
         </tr>
         <br />
 
         <tr>
-          <td align="right" valign="top">
+          <td></td>
+          <td valign="top">
             <label htmlFor="wd-available-from">Available from</label>
           </td>
           <td>
-            <input
+            <label htmlFor="wd-available-until"> Until </label>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+           <td><input
               id="wd-available-from"
               type="date"
               defaultValue="2024-05-06"
-            />
-            <label htmlFor="wd-available-until"> Until </label>
-            <input
+            /></td>
+            <td><input
               id="wd-available-until"
               type="date"
               defaultValue="2024-05-20"
-            />
+            /></td>
+        </tr>
+        
+        <tr>
+          <td colSpan={3}>
+              <hr></hr>
+          </td>
+        </tr>
+         <tr>
+          <td colSpan={3} align="right">
+              <button>Cancel</button>
+              <button>Save</button>
           </td>
         </tr>
       </table>
  
-      <hr></hr>
-    
-      <button>Cancel</button>
-      <button>Save</button>
       
     </div>
   );
