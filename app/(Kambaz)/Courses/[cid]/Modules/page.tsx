@@ -42,11 +42,11 @@ export default function Modules() {
           </div>
           <ListGroup className="wd-lessons rounded-0">
             <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> LESSON 1{" "}
+              <BsGripVertical className="me-2 fs-3" /> HTML Basics & Page Structure{" "}
               <LessonControlButtons />
             </ListGroupItem>
             <ListGroupItem className="wd-lesson p-3 ps-1">
-              <BsGripVertical className="me-2 fs-3" /> LESSON 2{" "}
+              <BsGripVertical className="me-2 fs-3" /> CSS Fundamentals & Page Styling{" "}
               <LessonControlButtons />
             </ListGroupItem>
           </ListGroup>

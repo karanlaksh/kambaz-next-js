@@ -4,7 +4,7 @@ import { Row, Col, Card, Button } from "react-bootstrap";
 
 export default function Dashboard() {
   const courses = [
-    { id: 1234, title: "CS1234 React JS", img: "/images/reactjs.jpg" },
+    { id: 1234, title: "CS1234 React JS", img: "/images/reactJS.jpg" },
     { id: 1235, title: "CS1235 HTML", img: "/images/html.jpg" },
     { id: 1236, title: "CS1236 CSS", img: "/images/css.jpg" },
     { id: 1237, title: "CS1237 JavaScript", img: "/images/js.jpg" },
