@@ -1,134 +1,160 @@
 "use client";
-import { Form, Button, Row, Col, Card } from "react-bootstrap";
+import { Form, Row, Col, Button, InputGroup } from "react-bootstrap";
 
 export default function AssignmentEditor() {
   return (
-    <div id="wd-assignments-editor" className="container mt-4">
-      <h4 className="mb-4">Assignment Editor</h4>
-
+    <div className="container-fluid p-3" id="wd-assignment-editor">
+      {/* Breadcrumb */}
+      <div className="mb-4 text-muted"> CS5610 → Assignments → A1 </div>
       <Form>
-        <Form.Group className="mb-3">
-          <Form.Label><b>Assignment Name</b></Form.Label>
-          <Form.Control
-            id="wd-name"
-            type="text"
-            defaultValue="A1 - ENV + HTML"
-          />
+        {/* Assignment Name */}
+        <Form.Group className="mb-3" controlId="wd-assignment-name">
+          <Form.Label className="fw-bold">Assignment Name</Form.Label>
+          <Form.Control type="text" defaultValue="A1" />
         </Form.Group>
 
-        <Form.Group className="mb-4">
-          <Form.Label>Assignment Description</Form.Label>
+        {/* Description */}
+        <Form.Group className="mb-3" controlId="wd-assignment-description">
           <Form.Control
             as="textarea"
-            rows={6}
-            defaultValue="The assignment is available online to submit."
+            rows={7}
+            defaultValue={`The assignment is available online
+
+Submit a link to the landing page of your Web application running on Netlify.
+
+The landing page should include the following:
+
+• Your full name and section
+• Links to each of the lab assignments
+• Link to the Kanbas application
+• Links to all relevant source code repositories
+
+The Kanbas application should include a link to navigate back to the landing page.`}
           />
         </Form.Group>
 
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Points</Form.Label>
-              <Form.Control id="wd-points" type="number" defaultValue={100} />
-            </Form.Group>
+        {/* Points */}
+        <Form.Group as={Row} className="mb-3 align-items-center">
+          <Form.Label column sm="2" className="fw-bold text-start">
+            Points
+          </Form.Label>
+          <Col sm="10">
+            <Form.Control type="number" defaultValue={100} />
           </Col>
+        </Form.Group>
 
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Assignment Group</Form.Label>
-              <Form.Select id="wd-group" defaultValue="ASSIGNMENTS">
-                <option>ASSIGNMENTS</option>
-                <option>QUIZZES</option>
-                <option>EXAMS</option>
-                <option>PROJECT</option>
-              </Form.Select>
-            </Form.Group>
+        {/* Assignment Group */}
+        <Form.Group as={Row} className="mb-3 align-items-center">
+          <Form.Label column sm="2" className="fw-bold text-start">
+            Assignment Group
+          </Form.Label>
+          <Col sm="10">
+            <Form.Select defaultValue="ASSIGNMENTS">
+              <option>ASSIGNMENTS</option>
+              <option>QUIZZES</option>
+              <option>EXAMS</option>
+              <option>PROJECT</option>
+            </Form.Select>
           </Col>
-        </Row>
+        </Form.Group>
 
-        <Row>
-          <Col md={6}>
-            <Form.Group className="mb-3">
-              <Form.Label>Display Grade as</Form.Label>
-              <Form.Select id="wd-display-grade-as">
-                <option>Percentage</option>
-                <option>Points</option>
-                <option>Letter Grade</option>
-              </Form.Select>
-            </Form.Group>
+        {/* Display Grade As */}
+        <Form.Group as={Row} className="mb-3 align-items-center">
+          <Form.Label column sm="2" className="fw-bold text-start">
+            Display Grade as
+          </Form.Label>
+          <Col sm="10">
+            <Form.Select defaultValue="Percentage">
+              <option>Percentage</option>
+              <option>Points</option>
+              <option>Letter Grade</option>
+            </Form.Select>
           </Col>
-        </Row>
+        </Form.Group>
 
-        {/* Submission Type Box */}
-        <Card className="mb-3 border rounded">
-          <Card.Body>
-            <Form.Group>
-              <Form.Label><b>Submission Type</b></Form.Label>
-              <Form.Select id="wd-submission-type" className="mb-2">
+        {/* Submission Type */}
+        <Form.Group as={Row} className="mb-3">
+          <Form.Label column sm="2" className="fw-bold text-start">
+            Submission Type
+          </Form.Label>
+          <Col sm="10">
+            <div className="border rounded p-3">
+              <Form.Select defaultValue="Online" className="mb-3">
                 <option>Online</option>
                 <option>On Paper</option>
                 <option>No Submission</option>
               </Form.Select>
 
-              <div className="ms-3">
-                <Form.Check label="Text Entry" id="wd-text-entry" />
-                <Form.Check label="Website URL" id="wd-website-url" defaultChecked />
-                <Form.Check label="Media Recordings" id="wd-media-recordings" />
-                <Form.Check label="Student Annotation" id="wd-student-annotation" />
-                <Form.Check label="File Uploads" id="wd-file-upload" />
+              <Form.Label className="fw-bold ms-1">Online Entry Options</Form.Label>
+              <div className="ms-4">
+                <Form.Check label="Text Entry" />
+                <Form.Check label="Website URL" defaultChecked />
+                <Form.Check label="Media Recordings" />
+                <Form.Check label="Student Annotation" />
+                <Form.Check label="File Uploads" />
               </div>
-            </Form.Group>
-          </Card.Body>
-        </Card>
+            </div>
+          </Col>
+        </Form.Group>
 
-        {/* Assign To Box */}
-        <Card className="mb-3 border rounded">
-          <Card.Body>
-            <Form.Group className="mb-3">
-              <Form.Label><b>Assign To</b></Form.Label>
-              <Form.Control id="wd-assign-to" defaultValue="Everyone" />
-            </Form.Group>
+        {/* Assign Section */}
+        <Form.Group as={Row} className="mb-3">
+          <Form.Label column sm="2" className="fw-bold text-start">
+            Assign
+          </Form.Label>
+          <Col sm="10">
+            <div className="border rounded p-3">
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold">Assign to</Form.Label>
+                <Form.Control type="text" defaultValue="Everyone" />
+              </Form.Group>
 
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Due</Form.Label>
-                  <Form.Control
-                    id="wd-due-date"
-                    type="date"
-                    defaultValue="2024-05-13"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Available From</Form.Label>
-                  <Form.Control
-                    id="wd-available-from"
-                    type="date"
-                    defaultValue="2024-05-06"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Until</Form.Label>
-                  <Form.Control
-                    id="wd-available-until"
-                    type="date"
-                    defaultValue="2024-05-20"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
+              <Row>
+                <Col>
+                  <Form.Label className="fw-bold">Due</Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type="datetime-local"
+                      defaultValue="2024-05-13T23:59"
+                    />
+                  </InputGroup>
+                </Col>
+              </Row>
 
-        <hr />
+              <Row className="mt-3">
+                <Col>
+                  <Form.Label className="fw-bold">Available from</Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type="datetime-local"
+                      defaultValue="2025-11-06T12:00"
+                    />
+                  </InputGroup>
+                </Col>
+                <Col>
+                  <Form.Label className="fw-bold">Until</Form.Label>
+                  <InputGroup>
+                    <Form.Control 
+                    type="datetime-local" 
+                    defaultValue="2025-12-06T12:00"/>
+                  </InputGroup>
+                </Col>
+              </Row>
+            </div>
+          </Col>
+        </Form.Group>
 
-        <div className="d-flex justify-content-end gap-2">
-          <Button variant="outline-secondary">Cancel</Button>
-          <Button style={{ backgroundColor: "#d41b2c", border: "none" }}>
+        {/* Divider and Buttons */}
+        <hr className="my-4" />
+
+        <div className="text-end">
+          <Button variant="outline-secondary" className="me-2">
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            style={{ backgroundColor: "#d41b2c", border: "none" }}
+          >
             Save
           </Button>
         </div>

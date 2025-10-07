@@ -13,7 +13,9 @@ body * {
     padding-left: 140px !important;
   }
 }
-btn-secondary {
+
+
+.btn-secondary {
   --bs-btn-color: #000 !important;
   --bs-btn-bg: #c7cdd1 !important;
   --bs-btn-border-color: #c7cdd1 !important;
@@ -28,6 +30,7 @@ btn-secondary {
 .wd-lesson {
   border-left: 3px solid green !important;
 }
+
 
 /* === Kambaz Course Navigation Styling === */
 .list-group.wd > .list-group-item {
