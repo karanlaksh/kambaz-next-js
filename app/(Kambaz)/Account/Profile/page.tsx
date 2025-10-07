@@ -1,20 +1,22 @@
-import Link from "next/link";
+"use client";
+import { Form, Button } from "react-bootstrap";
+
 export default function Profile() {
   return (
-    <div id="wd-profile-screen">
-      <h3>Profile</h3>
-      <input defaultValue="alice" placeholder="username" className="wd-username"/><br/>
-      <input defaultValue="123"   placeholder="password" type="password"
-             className="wd-password" /><br/>
-      <input defaultValue="Alice" placeholder="First Name" id="wd-firstname" /><br/>
-      <input defaultValue="Wonderland" placeholder="Last Name" id="wd-lastname" /><br/>
-      <input defaultValue="2000-01-01" type="date" id="wd-dob" /><br/>
-      <input defaultValue="alice@wonderland" type="email" id="wd-email" /><br/>
-      <select defaultValue="FACULTY" id="wd-role">
-        <option value="USER">User</option>       <option value="ADMIN">Admin</option>
-        <option value="FACULTY">Faculty</option> <option value="STUDENT">Student</option>
-      </select><br/>
-      <Link href="Signin" > Sign out </Link>
+    <div id="wd-profile-screen" className="container mt-5" style={{ maxWidth: "400px" }}>
+      <h2 className="mb-4">Profile</h2>
+      <Form>
+        <Form.Control defaultValue="alice" className="mb-3" />
+        <Form.Control defaultValue="123" className="mb-3" />
+        <Form.Control defaultValue="Alice" className="mb-3" />
+        <Form.Control defaultValue="Wonderland" className="mb-3" />
+        <Form.Control type="date" className="mb-3" />
+        <Form.Control defaultValue="alice@wonderland.com" className="mb-3" />
+        <Form.Control defaultValue="User" className="mb-3" />
+        <a href="/Account/Signin">
+          <Button variant="danger" className="w-100">Signout</Button>
+        </a>
+      </Form>
     </div>
-);}
-
+  );
+}
