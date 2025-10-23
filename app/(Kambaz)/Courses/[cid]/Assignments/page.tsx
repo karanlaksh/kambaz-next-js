@@ -2,20 +2,36 @@
 
 import Link from "next/link";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { FaPlus, FaSearch, FaCheckCircle, FaEllipsisV, FaChevronDown } from "react-icons/fa";
+import {
+  FaPlus,
+  FaSearch,
+  FaCheckCircle,
+  FaEllipsisV,
+  FaChevronDown,
+} from "react-icons/fa";
 import { BsGripVertical } from "react-icons/bs";
 import { MdAssignment } from "react-icons/md";
 import { useParams } from "next/navigation";
-import { assignments } from "../../../Database"; // named import
+import { assignments } from "../../../Database";
+
+// ✅ Define a type for better clarity and linting
+interface Assignment {
+  _id: string;
+  course: string;
+  title: string;
+  available: string;
+  due: string;
+  points: number;
+}
 
 export default function Assignments() {
   const { cid } = useParams();
 
-  // Filter assignments for the current course
+  // ✅ Filter assignments for the current course
   const courseAssignments = assignments.filter(
-    (a: any) =>
+    (a: Assignment) =>
       String(a.course).toLowerCase() === String(cid).toLowerCase() ||
-      String(a.course).endsWith(cid)
+      String(a.course).endsWith(String(cid))
   );
 
   return (
@@ -26,14 +42,25 @@ export default function Assignments() {
           <InputGroup.Text className="bg-white border-end-0">
             <FaSearch className="text-secondary" />
           </InputGroup.Text>
-          <Form.Control placeholder="Search for Assignments" className="border-start-0" />
+          <Form.Control
+            placeholder="Search for Assignments"
+            className="border-start-0"
+          />
         </InputGroup>
 
         <div>
-          <Button variant="secondary" className="me-2 text-nowrap" id="wd-add-assignment-group">
+          <Button
+            variant="secondary"
+            className="me-2 text-nowrap"
+            id="wd-add-assignment-group"
+          >
             <FaPlus className="me-2" /> Group
           </Button>
-          <Button variant="danger" className="text-nowrap" id="wd-add-assignment">
+          <Button
+            variant="danger"
+            className="text-nowrap"
+            id="wd-add-assignment"
+          >
             <FaPlus className="me-2" /> Assignment
           </Button>
         </div>
@@ -57,10 +84,12 @@ export default function Assignments() {
         {/* --- Assignment List --- */}
         <ul className="list-unstyled mb-0">
           {courseAssignments.length === 0 && (
-            <div className="text-muted p-3">No assignments found for this course.</div>
+            <div className="text-muted p-3">
+              No assignments found for this course.
+            </div>
           )}
 
-          {courseAssignments.map((assignment: any, index: number) => (
+          {courseAssignments.map((assignment: Assignment, index: number) => (
             <div key={assignment._id}>
               <li className="d-flex align-items-start p-3 ps-2 border-start border-success border-4">
                 <BsGripVertical className="me-3 mt-1 text-secondary" />

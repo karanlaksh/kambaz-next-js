@@ -13,7 +13,7 @@ export default function Dashboard() {
       style={{
         backgroundColor: "white",
         minHeight: "100vh",
-        marginLeft: "0px", // ✅ Removed the offset
+        marginLeft: "0px",
       }}
     >
       <h1 id="wd-dashboard-title">Dashboard</h1>
@@ -24,10 +24,11 @@ export default function Dashboard() {
       <hr />
 
       <div id="wd-dashboard-courses" className="mt-4">
-        <Row xs={1} md={3} lg={4} className="g-5">
+        {/* ✅ Let Bootstrap auto-size cards per column */}
+        <Row xs={1} sm={2} md={3} lg={4} className="g-4">
           {courses.map((course) => (
-            <Col key={course._id} className="wd-dashboard-course">
-              <Card className="shadow-sm border-0" style={{ width: "300px" }}>
+            <Col key={course._id}>
+              <Card className="shadow-sm border-0 h-100">
                 <Link
                   href={`/Courses/${course._id}/Home`}
                   className="text-decoration-none text-dark"
