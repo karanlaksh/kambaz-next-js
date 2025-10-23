@@ -5,6 +5,23 @@ import { Form, Row, Col, Button, InputGroup } from "react-bootstrap";
 import Link from "next/link";
 import { assignments } from "../../../../Database";
 
+// Defined extended Assignment type with optional fields
+type Assignment = {
+  _id: string;
+  title: string;
+  course: string;
+  due: string;
+  available: string;
+  points: number;
+  modules: string[];
+  description?: string;
+  group?: string;
+  displayGrade?: string;
+  submissionType?: string;
+  assignedTo?: string;
+  until?: string;
+};
+
 // Helper to format JSON dates for datetime-local input
 const formatDate = (date?: string) => {
   if (!date) return "";
@@ -20,8 +37,8 @@ const formatDate = (date?: string) => {
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
 
-  // Find assignment from database
-  const assignment = assignments.find(a => a._id === aid);
+  // Find assignment from database and type it
+  const assignment: Assignment | undefined = assignments.find(a => a._id === aid);
 
   const defaultDescription = `The assignment is available online
 
@@ -200,4 +217,3 @@ The Kanbas application should include a link to navigate back to the landing pag
     </div>
   );
 }
-
