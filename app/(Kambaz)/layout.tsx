@@ -1,24 +1,22 @@
+"use client";
 import { ReactNode } from "react";
 import KambazNavigation from "./Navigation";
 import "./styles.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+import store from "./store";
+import { Provider } from "react-redux";
 
-export default function KambazLayout({ children }: { children: ReactNode }) {
+export default function KambazLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
-    <div id="wd-kambaz">
-      <div className="d-flex">
-        {/* Sidebar */}
+    <Provider store={store}>
+      <div className="d-flex" id="wd-kambaz">
         <div>
           <KambazNavigation />
         </div>
-
-        {/* Main content */}
-        <div className="wd-main-content-offset p-3 flex-fill">
-          {children}
-        </div>
+        <div className="flex-fill ps-3 wd-main-content-offset">{children}</div>
       </div>
-    </div>
+    </Provider>
   );
 }
-
 
