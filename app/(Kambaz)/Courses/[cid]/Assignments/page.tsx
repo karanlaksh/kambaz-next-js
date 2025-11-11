@@ -1,20 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { Button, Form, InputGroup, Modal } from "react-bootstrap";
 import {
   FaPlus,
   FaSearch,
   FaCheckCircle,
   FaEllipsisV,
   FaChevronDown,
+  FaTrash,
 } from "react-icons/fa";
 import { BsGripVertical } from "react-icons/bs";
 import { MdAssignment } from "react-icons/md";
 import { useParams } from "next/navigation";
-import { assignments } from "../../../Database";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../../store";
+import { deleteAssignment } from "./reducer";
+import { useState } from "react";
 
-// ✅ Define a type for better clarity and linting
 interface Assignment {
   _id: string;
   course: string;
@@ -26,17 +29,39 @@ interface Assignment {
 
 export default function Assignments() {
   const { cid } = useParams();
+  const { assignments } = useSelector((state: RootState) => state.assignmentsReducer);
+  const dispatch = useDispatch();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
 
-  // ✅ Filter assignments for the current course
+  // Filter assignments for the current course
   const courseAssignments = assignments.filter(
     (a: Assignment) =>
       String(a.course).toLowerCase() === String(cid).toLowerCase() ||
       String(a.course).endsWith(String(cid))
   );
 
+  const handleDeleteClick = (assignmentId: string) => {
+    setAssignmentToDelete(assignmentId);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (assignmentToDelete) {
+      dispatch(deleteAssignment(assignmentToDelete));
+    }
+    setShowDeleteDialog(false);
+    setAssignmentToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteDialog(false);
+    setAssignmentToDelete(null);
+  };
+
   return (
     <div id="wd-assignments" className="p-3">
-      {/* --- Search and Buttons Row --- */}
+      {/* Search and Buttons Row */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <InputGroup style={{ width: "300px" }}>
           <InputGroup.Text className="bg-white border-end-0">
@@ -56,17 +81,19 @@ export default function Assignments() {
           >
             <FaPlus className="me-2" /> Group
           </Button>
-          <Button
-            variant="danger"
-            className="text-nowrap"
-            id="wd-add-assignment"
-          >
-            <FaPlus className="me-2" /> Assignment
-          </Button>
+          <Link href={`/Courses/${cid}/Assignments/new`}>
+            <Button
+              variant="danger"
+              className="text-nowrap"
+              id="wd-add-assignment"
+            >
+              <FaPlus className="me-2" /> Assignment
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* --- Assignment Group Header --- */}
+      {/* Assignment Group Header */}
       <div className="border rounded">
         <div className="d-flex justify-content-between align-items-center p-2 border-bottom bg-light fw-bold">
           <div className="d-flex align-items-center">
@@ -81,7 +108,7 @@ export default function Assignments() {
           </div>
         </div>
 
-        {/* --- Assignment List --- */}
+        {/* Assignment List */}
         <ul className="list-unstyled mb-0">
           {courseAssignments.length === 0 && (
             <div className="text-muted p-3">
@@ -107,6 +134,11 @@ export default function Assignments() {
                     <b>Due</b> {assignment.due} | {assignment.points} pts
                   </div>
                 </div>
+                <FaTrash
+                  className="text-danger fs-5 ms-3 mt-1"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleDeleteClick(assignment._id)}
+                />
                 <FaCheckCircle className="text-success fs-5 ms-3 mt-1" />
                 <FaEllipsisV className="text-secondary fs-6 ms-3 mt-1" />
               </li>
@@ -115,6 +147,24 @@ export default function Assignments() {
           ))}
         </ul>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteDialog} onHide={cancelDelete}>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Assignment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to remove this assignment?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelDelete}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

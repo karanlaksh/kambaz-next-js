@@ -1,17 +1,19 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Form, Row, Col, Button, InputGroup } from "react-bootstrap";
-import Link from "next/link";
-import { assignments } from "../../../../Database";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../../../store";
+import { addAssignment, updateAssignment } from "../reducer";
 
-// Defined extended Assignment type with optional fields
 type Assignment = {
   _id: string;
   title: string;
   course: string;
   due: string;
   available: string;
+  until?: string;
   points: number;
   modules: string[];
   description?: string;
@@ -19,10 +21,8 @@ type Assignment = {
   displayGrade?: string;
   submissionType?: string;
   assignedTo?: string;
-  until?: string;
 };
 
-// Helper to format JSON dates for datetime-local input
 const formatDate = (date?: string) => {
   if (!date) return "";
   const d = new Date(date);
@@ -36,9 +36,12 @@ const formatDate = (date?: string) => {
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { assignments } = useSelector((state: RootState) => state.assignmentsReducer);
 
-  // Find assignment from database and type it
-  const assignment: Assignment | undefined = assignments.find(a => a._id === aid);
+  const isNewAssignment = aid === "new";
+  const existingAssignment = assignments.find((a) => a._id === aid);
 
   const defaultDescription = `The assignment is available online
 
@@ -46,40 +49,75 @@ Submit a link to the landing page of your Web application running on Netlify.
 
 The landing page should include the following:
 
-• Your full name and section
-• Links to each of the lab assignments
-• Link to the Kanbas application
-• Links to all relevant source code repositories
+- Your full name and section
+- Links to each of the lab assignments
+- Link to the Kanbas application
+- Links to all relevant source code repositories
 
 The Kanbas application should include a link to navigate back to the landing page.`;
 
+  const [assignment, setAssignment] = useState<Assignment>({
+    _id: "",
+    title: "New Assignment",
+    course: cid as string,
+    due: "2025-12-31T23:59",
+    available: "2025-11-01T00:00",
+    until: "2025-12-31T23:59",
+    points: 100,
+    modules: [],
+    description: defaultDescription,
+    group: "ASSIGNMENTS",
+    displayGrade: "Percentage",
+    submissionType: "Online",
+    assignedTo: "Everyone",
+  });
+
+  useEffect(() => {
+    if (!isNewAssignment && existingAssignment) {
+      setAssignment(existingAssignment);
+    }
+  }, [isNewAssignment, existingAssignment]);
+
+  const handleSave = () => {
+    if (isNewAssignment) {
+      dispatch(addAssignment(assignment));
+    } else {
+      dispatch(updateAssignment(assignment));
+    }
+    router.push(`/Courses/${cid}/Assignments`);
+  };
+
+  const handleCancel = () => {
+    router.push(`/Courses/${cid}/Assignments`);
+  };
+
   return (
     <div className="container-fluid p-3" id="wd-assignment-editor">
-      {/* Breadcrumb */}
       <div className="mb-4 text-muted">
-        {cid} → Assignments → {assignment?.title || "Assignment"}
+        {cid} → Assignments → {assignment.title}
       </div>
 
       <Form>
-        {/* Assignment Name */}
         <Form.Group className="mb-3" controlId="wd-assignment-name">
           <Form.Label className="fw-bold">Assignment Name</Form.Label>
           <Form.Control
             type="text"
-            defaultValue={assignment?.title || "A1"}
+            value={assignment.title}
+            onChange={(e) => setAssignment({ ...assignment, title: e.target.value })}
           />
         </Form.Group>
 
-        {/* Description */}
         <Form.Group className="mb-3" controlId="wd-assignment-description">
           <Form.Control
             as="textarea"
             rows={7}
-            defaultValue={assignment?.description || defaultDescription}
+            value={assignment.description}
+            onChange={(e) =>
+              setAssignment({ ...assignment, description: e.target.value })
+            }
           />
         </Form.Group>
 
-        {/* Points */}
         <Form.Group as={Row} className="mb-3 align-items-center">
           <Form.Label column sm="2" className="fw-bold text-start">
             Points
@@ -87,18 +125,23 @@ The Kanbas application should include a link to navigate back to the landing pag
           <Col sm="10">
             <Form.Control
               type="number"
-              defaultValue={assignment?.points || 100}
+              value={assignment.points}
+              onChange={(e) =>
+                setAssignment({ ...assignment, points: parseInt(e.target.value) })
+              }
             />
           </Col>
         </Form.Group>
 
-        {/* Assignment Group */}
         <Form.Group as={Row} className="mb-3 align-items-center">
           <Form.Label column sm="2" className="fw-bold text-start">
             Assignment Group
           </Form.Label>
           <Col sm="10">
-            <Form.Select defaultValue={assignment?.group || "ASSIGNMENTS"}>
+            <Form.Select
+              value={assignment.group}
+              onChange={(e) => setAssignment({ ...assignment, group: e.target.value })}
+            >
               <option>ASSIGNMENTS</option>
               <option>QUIZZES</option>
               <option>EXAMS</option>
@@ -107,13 +150,17 @@ The Kanbas application should include a link to navigate back to the landing pag
           </Col>
         </Form.Group>
 
-        {/* Display Grade As */}
         <Form.Group as={Row} className="mb-3 align-items-center">
           <Form.Label column sm="2" className="fw-bold text-start">
             Display Grade as
           </Form.Label>
           <Col sm="10">
-            <Form.Select defaultValue={assignment?.displayGrade || "Percentage"}>
+            <Form.Select
+              value={assignment.displayGrade}
+              onChange={(e) =>
+                setAssignment({ ...assignment, displayGrade: e.target.value })
+              }
+            >
               <option>Percentage</option>
               <option>Points</option>
               <option>Letter Grade</option>
@@ -121,20 +168,27 @@ The Kanbas application should include a link to navigate back to the landing pag
           </Col>
         </Form.Group>
 
-        {/* Submission Type */}
         <Form.Group as={Row} className="mb-3">
           <Form.Label column sm="2" className="fw-bold text-start">
             Submission Type
           </Form.Label>
           <Col sm="10">
             <div className="border rounded p-3">
-              <Form.Select defaultValue={assignment?.submissionType || "Online"} className="mb-3">
+              <Form.Select
+                value={assignment.submissionType}
+                onChange={(e) =>
+                  setAssignment({ ...assignment, submissionType: e.target.value })
+                }
+                className="mb-3"
+              >
                 <option>Online</option>
                 <option>On Paper</option>
                 <option>No Submission</option>
               </Form.Select>
 
-              <Form.Label className="fw-bold ms-1">Online Entry Options</Form.Label>
+              <Form.Label className="fw-bold ms-1">
+                Online Entry Options
+              </Form.Label>
               <div className="ms-4">
                 <Form.Check label="Text Entry" />
                 <Form.Check label="Website URL" defaultChecked />
@@ -146,7 +200,6 @@ The Kanbas application should include a link to navigate back to the landing pag
           </Col>
         </Form.Group>
 
-        {/* Assign Section */}
         <Form.Group as={Row} className="mb-3">
           <Form.Label column sm="2" className="fw-bold text-start">
             Assign
@@ -157,7 +210,10 @@ The Kanbas application should include a link to navigate back to the landing pag
                 <Form.Label className="fw-bold">Assign to</Form.Label>
                 <Form.Control
                   type="text"
-                  defaultValue={assignment?.assignedTo || "Everyone"}
+                  value={assignment.assignedTo}
+                  onChange={(e) =>
+                    setAssignment({ ...assignment, assignedTo: e.target.value })
+                  }
                 />
               </Form.Group>
 
@@ -167,7 +223,10 @@ The Kanbas application should include a link to navigate back to the landing pag
                   <InputGroup>
                     <Form.Control
                       type="datetime-local"
-                      defaultValue={formatDate(assignment?.due) || "2024-05-13T23:59"}
+                      value={formatDate(assignment.due)}
+                      onChange={(e) =>
+                        setAssignment({ ...assignment, due: e.target.value })
+                      }
                     />
                   </InputGroup>
                 </Col>
@@ -179,7 +238,10 @@ The Kanbas application should include a link to navigate back to the landing pag
                   <InputGroup>
                     <Form.Control
                       type="datetime-local"
-                      defaultValue={formatDate(assignment?.available) || "2025-11-06T12:00"}
+                      value={formatDate(assignment.available)}
+                      onChange={(e) =>
+                        setAssignment({ ...assignment, available: e.target.value })
+                      }
                     />
                   </InputGroup>
                 </Col>
@@ -188,7 +250,10 @@ The Kanbas application should include a link to navigate back to the landing pag
                   <InputGroup>
                     <Form.Control
                       type="datetime-local"
-                      defaultValue={formatDate(assignment?.until) || "2025-12-06T12:00"}
+                      value={formatDate(assignment.until)}
+                      onChange={(e) =>
+                        setAssignment({ ...assignment, until: e.target.value })
+                      }
                     />
                   </InputGroup>
                 </Col>
@@ -197,18 +262,16 @@ The Kanbas application should include a link to navigate back to the landing pag
           </Col>
         </Form.Group>
 
-        {/* Divider and Buttons */}
         <hr className="my-4" />
 
         <div className="text-end">
-          <Link href={`/Courses/${cid}/Assignments`}>
-            <Button variant="outline-secondary" className="me-2">
-              Cancel
-            </Button>
-          </Link>
+          <Button variant="outline-secondary" className="me-2" onClick={handleCancel}>
+            Cancel
+          </Button>
           <Button
             variant="danger"
             style={{ backgroundColor: "#d41b2c", border: "none" }}
+            onClick={handleSave}
           >
             Save
           </Button>

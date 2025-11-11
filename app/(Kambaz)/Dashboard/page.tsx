@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import { Row, Col, Card, Button, FormControl } from "react-bootstrap";
 import { addNewCourse, deleteCourse, updateCourse } from "../Courses/reducer";
+import { enrollCourse, unenrollCourse } from "../Enrollments/reducer";
 import { RootState } from "../store";
 
 interface Course {
@@ -13,8 +14,16 @@ interface Course {
   description: string;
 }
 
+interface Enrollment {
+  _id: string;
+  user: string;
+  course: string;
+}
+
 export default function Dashboard() {
   const { courses } = useSelector((state: RootState) => state.coursesReducer);
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const { enrollments } = useSelector((state: RootState) => state.enrollmentsReducer);
   const dispatch = useDispatch();
   
   const [course, setCourse] = useState<Course>({
@@ -23,6 +32,37 @@ export default function Dashboard() {
     img: "/images/reactjs.jpg",
     description: "New Description",
   });
+
+  const [showAllCourses, setShowAllCourses] = useState(false);
+
+  // Check if user is enrolled in a course
+  const isEnrolled = (courseId: string) => {
+    if (!currentUser) return false;
+    return enrollments.some(
+      (enrollment: Enrollment) =>
+        enrollment.user === currentUser._id && 
+        (enrollment.course === courseId || enrollment.course === `CS${courseId}`)
+    );
+  };
+
+  // Filter courses based on enrollment status
+  const displayedCourses = showAllCourses
+    ? courses
+    : currentUser
+    ? courses.filter((course) => isEnrolled(course._id))
+    : courses;
+
+  const handleEnroll = (courseId: string) => {
+    if (currentUser) {
+      dispatch(enrollCourse({ userId: currentUser._id, courseId: `CS${courseId}` }));
+    }
+  };
+
+  const handleUnenroll = (courseId: string) => {
+    if (currentUser) {
+      dispatch(unenrollCourse({ userId: currentUser._id, courseId: `CS${courseId}` }));
+    }
+  };
 
   return (
     <div
@@ -40,6 +80,15 @@ export default function Dashboard() {
       {/* New Course Form */}
       <h5>
         New Course
+        {currentUser && (
+          <Button
+            className="btn btn-primary float-end"
+            onClick={() => setShowAllCourses(!showAllCourses)}
+            id="wd-enrollments-btn"
+          >
+            {showAllCourses ? "My Courses" : "Enrollments"}
+          </Button>
+        )}
         <Button
           className="btn btn-warning float-end me-2"
           onClick={() => dispatch(updateCourse(course))}
@@ -76,18 +125,23 @@ export default function Dashboard() {
       <hr />
 
       <h2 id="wd-dashboard-published">
-        Published Courses ({courses.length})
+        {showAllCourses ? "All Courses" : "Published Courses"} ({displayedCourses.length})
       </h2>
       <hr />
 
       <div id="wd-dashboard-courses" className="mt-4">
         <Row xs={1} sm={2} md={3} lg={4} className="g-4">
-          {courses.map((course) => (
+          {displayedCourses.map((course) => (
             <Col key={course._id}>
               <Card className="shadow-sm border-0 h-100">
                 <Link
                   href={`/Courses/${course._id}/Home`}
                   className="text-decoration-none text-dark"
+                  onClick={(e) => {
+                    if (showAllCourses && !isEnrolled(course._id) && currentUser) {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   <Card.Img
                     variant="top"
@@ -109,6 +163,36 @@ export default function Dashboard() {
                     >
                       {course.description}
                     </Card.Text>
+                    
+                    {/* Enrollment Buttons */}
+                    {showAllCourses && currentUser ? (
+                      <div className="mb-2">
+                        {isEnrolled(course._id) ? (
+                          <Button
+                            variant="danger"
+                            className="w-100"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleUnenroll(course._id);
+                            }}
+                          >
+                            Unenroll
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="success"
+                            className="w-100"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleEnroll(course._id);
+                            }}
+                          >
+                            Enroll
+                          </Button>
+                        )}
+                      </div>
+                    ) : null}
+
                     <div className="d-flex justify-content-between align-items-center">
                       <Button variant="primary">Go</Button>
                       <div>
