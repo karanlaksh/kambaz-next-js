@@ -29,7 +29,7 @@ export default function Dashboard() {
   const [course, setCourse] = useState<Course>({
     _id: "0",
     name: "New Course",
-    img: "/images/reactjs.jpg",
+    img: "/images/reactJS.jpg",
     description: "New Description",
   });
 
