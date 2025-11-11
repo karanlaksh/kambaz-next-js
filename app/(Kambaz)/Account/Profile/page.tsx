@@ -2,12 +2,12 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setCurrentUser } from "../reducer";
+import { setCurrentUser, User } from "../reducer";
 import { RootState } from "../../store";
-import { Button, FormControl } from "react-bootstrap";
+import { Button, FormControl, Form } from "react-bootstrap";
 
 export default function Profile() {
-  const [profile, setProfile] = useState<any>({});
+  const [profile, setProfile] = useState<User | null>(null);
   const dispatch = useDispatch();
   const router = useRouter();
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
@@ -29,78 +29,76 @@ export default function Profile() {
     fetchProfile();
   }, []);
 
+  if (!profile) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="wd-profile-screen p-4" style={{ maxWidth: "600px" }}>
       <h3>Profile</h3>
-      {profile && (
-        <div>
+      <Form>
+        <Form.Group className="mb-3">
+          <Form.Label>Login ID</Form.Label>
           <FormControl
             id="wd-username"
-            className="mb-2"
-            placeholder="Username"
-            value={profile.username || ""}
+            value={profile.loginId || ""}
             onChange={(e) =>
-              setProfile({ ...profile, username: e.target.value })
+              setProfile({ ...profile, loginId: e.target.value })
             }
           />
-          <FormControl
-            id="wd-password"
-            className="mb-2"
-            placeholder="Password"
-            type="password"
-            value={profile.password || ""}
-            onChange={(e) =>
-              setProfile({ ...profile, password: e.target.value })
-            }
-          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>First Name</Form.Label>
           <FormControl
             id="wd-firstname"
-            className="mb-2"
-            placeholder="First Name"
             value={profile.firstName || ""}
             onChange={(e) =>
               setProfile({ ...profile, firstName: e.target.value })
             }
           />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Last Name</Form.Label>
           <FormControl
             id="wd-lastname"
-            className="mb-2"
-            placeholder="Last Name"
             value={profile.lastName || ""}
             onChange={(e) =>
               setProfile({ ...profile, lastName: e.target.value })
             }
           />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Section</Form.Label>
           <FormControl
-            id="wd-dob"
-            className="mb-2"
-            type="date"
-            value={profile.dob || ""}
-            onChange={(e) => setProfile({ ...profile, dob: e.target.value })}
+            id="wd-section"
+            value={profile.section || ""}
+            onChange={(e) =>
+              setProfile({ ...profile, section: e.target.value })
+            }
           />
-          <FormControl
-            id="wd-email"
-            className="mb-2"
-            placeholder="Email"
-            value={profile.email || ""}
-            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-          />
-          <select
-            className="form-control mb-2"
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Role</Form.Label>
+          <Form.Select
             id="wd-role"
             value={profile.role || "STUDENT"}
             onChange={(e) => setProfile({ ...profile, role: e.target.value })}
           >
-            <option value="USER">User</option>
-            <option value="ADMIN">Admin</option>
-            <option value="FACULTY">Faculty</option>
             <option value="STUDENT">Student</option>
-          </select>
-          <Button onClick={signout} variant="danger" className="w-100 mb-2" id="wd-signout-btn">
-            Sign out
-          </Button>
-        </div>
-      )}
+            <option value="TA">TA</option>
+            <option value="FACULTY">Faculty</option>
+            <option value="ADMIN">Admin</option>
+          </Form.Select>
+        </Form.Group>
+
+        <Button onClick={signout} variant="danger" className="w-100" id="wd-signout-btn">
+          Sign out
+        </Button>
+      </Form>
     </div>
   );
 }
