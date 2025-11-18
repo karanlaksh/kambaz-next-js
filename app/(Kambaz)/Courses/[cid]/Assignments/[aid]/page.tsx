@@ -3,9 +3,9 @@
 import { useParams, useRouter } from "next/navigation";
 import { Form, Row, Col, Button, InputGroup } from "react-bootstrap";
 import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "../../../../store";
-import { addAssignment, updateAssignment } from "../reducer";
+import * as client from "../client";
 
 type Assignment = {
   _id: string;
@@ -37,11 +37,11 @@ const formatDate = (date?: string) => {
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { assignments } = useSelector((state: RootState) => state.assignmentsReducer);
+  const { assignments } = useSelector(
+    (state: RootState) => state.assignmentsReducer
+  );
 
   const isNewAssignment = aid === "new";
-  const existingAssignment = assignments.find((a) => a._id === aid);
 
   const defaultDescription = `The assignment is available online
 
@@ -59,7 +59,7 @@ The Kanbas application should include a link to navigate back to the landing pag
   const [assignment, setAssignment] = useState<Assignment>({
     _id: "",
     title: "New Assignment",
-    course: cid as string,
+    course: (cid as string) || "",
     due: "2025-12-31T23:59",
     available: "2025-11-01T00:00",
     until: "2025-12-31T23:59",
@@ -73,16 +73,19 @@ The Kanbas application should include a link to navigate back to the landing pag
   });
 
   useEffect(() => {
-    if (!isNewAssignment && existingAssignment) {
-      setAssignment(existingAssignment);
+    if (!isNewAssignment) {
+      const existingAssignment = assignments.find((a) => a._id === aid);
+      if (existingAssignment) {
+        setAssignment(existingAssignment);
+      }
     }
-  }, [isNewAssignment, existingAssignment]);
+  }, [isNewAssignment, aid, assignments]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (isNewAssignment) {
-      dispatch(addAssignment(assignment));
+      await client.createAssignmentForCourse(cid as string, assignment);
     } else {
-      dispatch(updateAssignment(assignment));
+      await client.updateAssignment(assignment);
     }
     router.push(`/Courses/${cid}/Assignments`);
   };
@@ -103,7 +106,9 @@ The Kanbas application should include a link to navigate back to the landing pag
           <Form.Control
             type="text"
             value={assignment.title}
-            onChange={(e) => setAssignment({ ...assignment, title: e.target.value })}
+            onChange={(e) =>
+              setAssignment({ ...assignment, title: e.target.value })
+            }
           />
         </Form.Group>
 
@@ -127,7 +132,10 @@ The Kanbas application should include a link to navigate back to the landing pag
               type="number"
               value={assignment.points}
               onChange={(e) =>
-                setAssignment({ ...assignment, points: parseInt(e.target.value) })
+                setAssignment({
+                  ...assignment,
+                  points: parseInt(e.target.value),
+                })
               }
             />
           </Col>
@@ -140,7 +148,9 @@ The Kanbas application should include a link to navigate back to the landing pag
           <Col sm="10">
             <Form.Select
               value={assignment.group}
-              onChange={(e) => setAssignment({ ...assignment, group: e.target.value })}
+              onChange={(e) =>
+                setAssignment({ ...assignment, group: e.target.value })
+              }
             >
               <option>ASSIGNMENTS</option>
               <option>QUIZZES</option>
@@ -177,7 +187,10 @@ The Kanbas application should include a link to navigate back to the landing pag
               <Form.Select
                 value={assignment.submissionType}
                 onChange={(e) =>
-                  setAssignment({ ...assignment, submissionType: e.target.value })
+                  setAssignment({
+                    ...assignment,
+                    submissionType: e.target.value,
+                  })
                 }
                 className="mb-3"
               >
@@ -240,7 +253,10 @@ The Kanbas application should include a link to navigate back to the landing pag
                       type="datetime-local"
                       value={formatDate(assignment.available)}
                       onChange={(e) =>
-                        setAssignment({ ...assignment, available: e.target.value })
+                        setAssignment({
+                          ...assignment,
+                          available: e.target.value,
+                        })
                       }
                     />
                   </InputGroup>
@@ -265,7 +281,11 @@ The Kanbas application should include a link to navigate back to the landing pag
         <hr className="my-4" />
 
         <div className="text-end">
-          <Button variant="outline-secondary" className="me-2" onClick={handleCancel}>
+          <Button
+            variant="outline-secondary"
+            className="me-2"
+            onClick={handleCancel}
+          >
             Cancel
           </Button>
           <Button

@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setCurrentUser, User } from "../reducer";
 import { RootState } from "../../store";
 import { Button, FormControl, Form } from "react-bootstrap";
+import * as client from "../client";
 
 export default function Profile() {
   const [profile, setProfile] = useState<User | null>(null);
@@ -20,14 +21,26 @@ export default function Profile() {
     setProfile(currentUser);
   };
 
-  const signout = () => {
+  const updateProfile = async () => {
+    if (profile) {
+      const updatedProfile = await client.updateUser(profile);
+      dispatch(setCurrentUser(updatedProfile));
+    }
+  };
+
+  const signout = async () => {
+    await client.signout();
     dispatch(setCurrentUser(null));
     router.push("/Account/Signin");
   };
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+ useEffect(() => {
+  if (!currentUser) {
+    router.push("/Account/Signin");
+    return;
+  }
+  setProfile(currentUser);
+}, [currentUser, router]);
 
   if (!profile) {
     return <div>Loading...</div>;
@@ -42,9 +55,7 @@ export default function Profile() {
           <FormControl
             id="wd-username"
             value={profile.loginId || ""}
-            onChange={(e) =>
-              setProfile({ ...profile, loginId: e.target.value })
-            }
+            onChange={(e) => setProfile({ ...profile, loginId: e.target.value })}
           />
         </Form.Group>
 
@@ -53,9 +64,7 @@ export default function Profile() {
           <FormControl
             id="wd-firstname"
             value={profile.firstName || ""}
-            onChange={(e) =>
-              setProfile({ ...profile, firstName: e.target.value })
-            }
+            onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
           />
         </Form.Group>
 
@@ -64,9 +73,7 @@ export default function Profile() {
           <FormControl
             id="wd-lastname"
             value={profile.lastName || ""}
-            onChange={(e) =>
-              setProfile({ ...profile, lastName: e.target.value })
-            }
+            onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
           />
         </Form.Group>
 
@@ -75,9 +82,7 @@ export default function Profile() {
           <FormControl
             id="wd-section"
             value={profile.section || ""}
-            onChange={(e) =>
-              setProfile({ ...profile, section: e.target.value })
-            }
+            onChange={(e) => setProfile({ ...profile, section: e.target.value })}
           />
         </Form.Group>
 
@@ -95,6 +100,9 @@ export default function Profile() {
           </Form.Select>
         </Form.Group>
 
+        <Button onClick={updateProfile} className="btn btn-primary w-100 mb-2">
+          Update
+        </Button>
         <Button onClick={signout} variant="danger" className="w-100" id="wd-signout-btn">
           Sign out
         </Button>

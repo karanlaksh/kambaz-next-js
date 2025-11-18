@@ -27,27 +27,26 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
   const { enrollments } = useSelector((state: RootState) => state.enrollmentsReducer);
   const course = courses.find((course: Course) => course._id === cid);
   const [showNavigation, setShowNavigation] = useState(true);
+  const [checkedEnrollment, setCheckedEnrollment] = useState(false);
 
   // Check if user is enrolled
   useEffect(() => {
-    if (currentUser) {
-      const isEnrolled = enrollments.some(
-        (enrollment: Enrollment) =>
-          enrollment.user === currentUser._id && 
-          (enrollment.course === cid || enrollment.course === `CS${cid}`)
-      );
-      
-      console.log("Course ID:", cid);
-      console.log("User ID:", currentUser._id);
-      console.log("Is Enrolled:", isEnrolled);
-      console.log("Enrollments:", enrollments.filter((e: Enrollment) => e.user === currentUser._id));
-      
-      if (!isEnrolled) {
-        console.log("Not enrolled, redirecting to Dashboard");
-        router.push("/Dashboard");
+    // Wait for currentUser to be loaded from session
+    if (currentUser !== undefined && !checkedEnrollment) {
+      if (currentUser) {
+        const isEnrolled = enrollments.some(
+          (enrollment: Enrollment) =>
+            enrollment.user === currentUser._id && 
+            (enrollment.course === cid || enrollment.course === `CS${cid}`)
+        );
+        
+        if (!isEnrolled) {
+          router.push("/Dashboard");
+        }
       }
+      setCheckedEnrollment(true);
     }
-  }, [currentUser, enrollments, cid, router]);
+  }, [currentUser, enrollments, cid, router, checkedEnrollment]);
 
   return (
     <div id="wd-courses">
