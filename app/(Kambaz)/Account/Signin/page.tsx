@@ -9,22 +9,23 @@ import * as client from "../client";
 
 export default function Signin() {
   const [credentials, setCredentials] = useState({
-    loginId: "",
+    username: "",
+    password: "",
   });
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const router = useRouter();
 
   const signin = async () => {
-  try {
-    const user = await client.signin({ loginId: credentials.loginId });
-    if (!user) return;
-    dispatch(setCurrentUser(user));
-    router.push("/Dashboard");
-  } catch {
-    setError("Sign in failed. Please try again.");
-  }
-};
+    try {
+      const user = await client.signin({ loginId: credentials.username });
+      if (!user) return;
+      dispatch(setCurrentUser(user));
+      router.push("/Dashboard");
+    } catch (err: unknown) {
+      setError("Sign in failed. Please try again.");
+    }
+  };
 
   return (
     <div id="wd-signin-screen" className="container mt-5" style={{ maxWidth: "400px" }}>
@@ -32,13 +33,23 @@ export default function Signin() {
       {error && <div className="alert alert-danger">{error}</div>}
       <Form>
         <Form.Control
-          value={credentials.loginId}
+          value={credentials.username}
           onChange={(e) =>
-            setCredentials({ ...credentials, loginId: e.target.value })
+            setCredentials({ ...credentials, username: e.target.value })
           }
           className="mb-3"
-          placeholder="loginId"
+          placeholder="username"
           id="wd-username"
+        />
+        <Form.Control
+          value={credentials.password}
+          onChange={(e) =>
+            setCredentials({ ...credentials, password: e.target.value })
+          }
+          className="mb-3"
+          placeholder="password"
+          type="password"
+          id="wd-password"
         />
         <Button
           onClick={signin}
