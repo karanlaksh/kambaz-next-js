@@ -18,7 +18,10 @@ export default function Signin() {
 
   const signin = async () => {
     try {
-      const user = await client.signin({ loginId: credentials.username });
+      const user = await client.signin({
+        username: credentials.username,
+        password: credentials.password,
+      });
       if (!user) return;
       dispatch(setCurrentUser(user));
       router.push("/Dashboard");

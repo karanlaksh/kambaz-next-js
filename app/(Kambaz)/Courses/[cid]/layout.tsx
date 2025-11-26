@@ -27,32 +27,33 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
   const { enrollments } = useSelector((state: RootState) => state.enrollmentsReducer);
   const course = courses.find((course: Course) => course._id === cid);
   const [showNavigation, setShowNavigation] = useState(true);
-  const [checkedEnrollment, setCheckedEnrollment] = useState(false);
 
   // Check if user is enrolled
   useEffect(() => {
-    // Wait for currentUser to be loaded from session
-    if (currentUser !== undefined && !checkedEnrollment) {
-      if (currentUser) {
-        const isEnrolled = enrollments.some(
-          (enrollment: Enrollment) =>
-            enrollment.user === currentUser._id && 
-            (enrollment.course === cid || enrollment.course === `CS${cid}`)
-        );
-        
-        if (!isEnrolled) {
-          router.push("/Dashboard");
-        }
-      }
-      setCheckedEnrollment(true);
+    // If not logged in, redirect to signin
+    if (currentUser === null) {
+      router.push("/Account/Signin");
+      return;
     }
-  }, [currentUser, enrollments, cid, router, checkedEnrollment]);
+
+    // If logged in and enrollments loaded, check enrollment
+    if (currentUser && enrollments && enrollments.length > 0) {
+      const isEnrolled = enrollments.some(
+        (enrollment: Enrollment) =>
+          enrollment.user === currentUser._id && enrollment.course === cid
+      );
+
+      if (!isEnrolled) {
+        router.push("/Dashboard");
+      }
+    }
+  }, [currentUser, enrollments, cid, router]);
 
   return (
     <div id="wd-courses">
       <h2>
-        <FaAlignJustify 
-          className="me-4 fs-4 mb-1" 
+        <FaAlignJustify
+          className="me-4 fs-4 mb-1"
           style={{ cursor: "pointer" }}
           onClick={() => setShowNavigation(!showNavigation)}
         />
