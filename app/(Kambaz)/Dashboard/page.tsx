@@ -41,38 +41,36 @@ export default function Dashboard() {
 
   const [showAllCourses, setShowAllCourses] = useState(false);
 
-const fetchCourses = async () => {
-  try {
-    if (showAllCourses) {
-      // Fetch all courses when in Enrollments view
-      const allCourses = await coursesClient.fetchAllCourses();
-      dispatch(setCourses(allCourses));
-    } else {
-      // Fetch only enrolled courses for My Courses view
-      const courses = await coursesClient.findMyCourses();
-      dispatch(setCourses(courses));
+  const fetchCourses = async () => {
+    try {
+      if (showAllCourses) {
+        const allCourses = await coursesClient.fetchAllCourses();
+        dispatch(setCourses(allCourses));
+      } else {
+        const courses = await coursesClient.findMyCourses();
+        dispatch(setCourses(courses));
+      }
+    } catch (error) {
+      console.error(error);
     }
-  } catch (error) {
-    console.error(error);
-  }
-};
+  };
 
-const fetchEnrollments = async () => {
-  const enrollments = await enrollmentsClient.fetchAllEnrollments();
-  dispatch(setEnrollments(enrollments));
-};
+  const fetchEnrollments = async () => {
+    const enrollments = await enrollmentsClient.fetchAllEnrollments();
+    dispatch(setEnrollments(enrollments));
+  };
 
-useEffect(() => {
-  fetchCourses();
-  fetchEnrollments();
-}, [currentUser, showAllCourses]);
+  useEffect(() => {
+    fetchCourses();
+    fetchEnrollments();
+  }, [currentUser, showAllCourses]);
 
+  // Fixed: removed CS prefix check
   const isEnrolled = (courseId: string) => {
     if (!currentUser) return false;
     return enrollments.some(
       (enrollment: Enrollment) =>
-        enrollment.user === currentUser._id &&
-        (enrollment.course === courseId || enrollment.course === `CS${courseId}`)
+        enrollment.user === currentUser._id && enrollment.course === courseId
     );
   };
 
@@ -82,17 +80,19 @@ useEffect(() => {
     ? courses
     : [];
 
+  // Fixed: removed CS prefix
   const handleEnroll = async (courseId: string) => {
     if (currentUser) {
-      await enrollmentsClient.enrollInCourse("current", `CS${courseId}`);
-      dispatch(enrollCourse({ userId: currentUser._id, courseId: `CS${courseId}` }));
+      await enrollmentsClient.enrollInCourse("current", courseId);
+      dispatch(enrollCourse({ userId: currentUser._id, courseId }));
     }
   };
 
+  // Fixed: removed CS prefix
   const handleUnenroll = async (courseId: string) => {
     if (currentUser) {
-      await enrollmentsClient.unenrollFromCourse("current", `CS${courseId}`);
-      dispatch(unenrollCourse({ userId: currentUser._id, courseId: `CS${courseId}` }));
+      await enrollmentsClient.unenrollFromCourse("current", courseId);
+      dispatch(unenrollCourse({ userId: currentUser._id, courseId }));
     }
   };
 
