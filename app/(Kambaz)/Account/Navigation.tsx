@@ -7,15 +7,22 @@ import { RootState } from "../store";
 
 export default function AccountNavigation() {
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
-  const links = currentUser ? ["Profile"] : ["Signin", "Signup"];
   const pathname = usePathname();
+
+  const getLinks = () => {
+    if (!currentUser) return ["Signin", "Signup"];
+    if (currentUser.role === "ADMIN") return ["Profile", "Users"];
+    return ["Profile"];
+  };
+
+  const links = getLinks();
 
   return (
     <Nav className="flex-column">
       {links.map((link) => {
         const href = `/Account/${link}`;
         const isActive = pathname === href || pathname.toLowerCase().includes(link.toLowerCase());
-        
+
         return (
           <NavItem key={link}>
             <NavLink
