@@ -19,43 +19,43 @@ interface Lesson {
 
 interface Module {
   _id: string;
-  course: string;
   name: string;
+  description?: string;
   lessons?: Lesson[];
   editing?: boolean;
 }
 
 export default function Modules() {
   const { cid } = useParams();
+  const courseId = Array.isArray(cid) ? cid[0] : (cid as string);
   const [moduleName, setModuleName] = useState("");
   const { modules } = useSelector((state: RootState) => state.modulesReducer);
   const dispatch = useDispatch();
 
   const fetchModules = async () => {
-    const modules = await coursesClient.findModulesForCourse(cid as string);
+    const modules = await coursesClient.findModulesForCourse(courseId);
     dispatch(setModules(modules));
   };
 
   useEffect(() => {
     fetchModules();
-  }, []);
+  }, [courseId]);
 
-const onCreateModuleForCourse = async () => {
-  if (!cid) return;
-  const courseId = Array.isArray(cid) ? cid[0] : cid;
-  const newModule = { name: moduleName, course: courseId };
-  const createdModule = await coursesClient.createModuleForCourse(courseId, newModule);
-  dispatch(setModules([...modules, createdModule]));
-  setModuleName("");
-};
+  const onCreateModuleForCourse = async () => {
+    if (!courseId) return;
+    const newModule = { name: moduleName, description: "" };
+    const createdModule = await coursesClient.createModuleForCourse(courseId, newModule);
+    dispatch(setModules([...modules, createdModule]));
+    setModuleName("");
+  };
 
   const onRemoveModule = async (moduleId: string) => {
-    await coursesClient.deleteModule(moduleId);
+    await coursesClient.deleteModule(courseId, moduleId);
     dispatch(setModules(modules.filter((m: Module) => m._id !== moduleId)));
   };
 
   const onUpdateModule = async (moduleItem: Module) => {
-    await coursesClient.updateModule(moduleItem);
+    await coursesClient.updateModule(courseId, moduleItem);
     const newModules = modules.map((m: Module) =>
       m._id === moduleItem._id ? moduleItem : m
     );

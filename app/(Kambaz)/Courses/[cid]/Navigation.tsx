@@ -5,7 +5,7 @@ import { usePathname, useParams } from "next/navigation";
 
 export default function CourseNavigation() {
   const pathname = usePathname();
-  const { cid } = useParams(); // dynamically get course ID from the URL
+  const { cid } = useParams();
 
   const links = [
     "Home",
@@ -21,13 +21,8 @@ export default function CourseNavigation() {
   return (
     <div id="wd-courses-navigation" className="wd list-group fs-5 rounded-0">
       {links.map((label) => {
-        // Handle 'People' special route (has '/Table')
-        const href =
-          label === "People"
-            ? `/Courses/${cid}/${label}/Table`
-            : `/Courses/${cid}/${label}`;
-
-        const isActive = pathname === href;
+        const href = `/Courses/${cid}/${label}`;
+        const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
         return (
           <Link
