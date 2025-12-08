@@ -92,6 +92,10 @@ export const updateQuestion = async (
   return response.data;
 };
 
+export const deleteQuestion = async (quizId: string, questionId: string): Promise<void> => {
+  await axios.delete(`${QUIZZES_API}/${quizId}/questions/${questionId}`);
+};
+
 // ==================== ATTEMPT API ====================
 
 export interface Answer {
