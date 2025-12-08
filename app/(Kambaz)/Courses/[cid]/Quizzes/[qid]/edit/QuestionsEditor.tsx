@@ -16,6 +16,11 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
+  // Guard check
+  if (!quiz || !quiz.questions) {
+    return <div className="p-3">Loading questions...</div>;
+  }
+
   const handleAddQuestion = async () => {
     const newQuestion: Partial<Question> = {
       title: "New Question",
@@ -69,12 +74,11 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
     setQuiz({ ...quiz, questions: updatedQuestions, points: totalPoints });
   };
 
-const updateEditingQuestion = (field: string, value: string | number | boolean | Choice[]) => {
-  if (!editingQuestion) return;
-  setEditingQuestion({ ...editingQuestion, [field]: value });
-};
+  const updateEditingQuestion = (field: string, value: string | number | boolean | Choice[] | string[]) => {
+    if (!editingQuestion) return;
+    setEditingQuestion({ ...editingQuestion, [field]: value });
+  };
 
-  // Choice handlers for Multiple Choice
   const addChoice = () => {
     if (!editingQuestion) return;
     const newChoice: Choice = { _id: uuidv4(), text: "", isCorrect: false };
@@ -85,18 +89,17 @@ const updateEditingQuestion = (field: string, value: string | number | boolean |
   };
 
   const updateChoice = (choiceId: string, field: string, value: string | boolean) => {
-  if (!editingQuestion) return;
-  const updatedChoices = editingQuestion.choices.map((c: Choice) =>
-    c._id === choiceId ? { ...c, [field]: value } : c
-  );
-  // If setting isCorrect to true, set others to false (single correct answer)
-  if (field === "isCorrect" && value === true) {
-    updatedChoices.forEach((c: Choice) => {
-      if (c._id !== choiceId) c.isCorrect = false;
-    });
-  }
-  setEditingQuestion({ ...editingQuestion, choices: updatedChoices });
-};
+    if (!editingQuestion) return;
+    const updatedChoices = editingQuestion.choices.map((c: Choice) =>
+      c._id === choiceId ? { ...c, [field]: value } : c
+    );
+    if (field === "isCorrect" && value === true) {
+      updatedChoices.forEach((c: Choice) => {
+        if (c._id !== choiceId) c.isCorrect = false;
+      });
+    }
+    setEditingQuestion({ ...editingQuestion, choices: updatedChoices });
+  };
 
   const removeChoice = (choiceId: string) => {
     if (!editingQuestion) return;
@@ -106,7 +109,6 @@ const updateEditingQuestion = (field: string, value: string | number | boolean |
     });
   };
 
-  // Blank answer handlers for Fill in the Blank
   const addBlankAnswer = () => {
     if (!editingQuestion) return;
     setEditingQuestion({
@@ -178,7 +180,6 @@ const updateEditingQuestion = (field: string, value: string | number | boolean |
             />
           </Form.Group>
 
-          {/* Multiple Choice Options */}
           {editingQuestion.type === "MULTIPLE_CHOICE" && (
             <div className="mb-3">
               <Form.Label>Answers</Form.Label>
@@ -213,7 +214,6 @@ const updateEditingQuestion = (field: string, value: string | number | boolean |
             </div>
           )}
 
-          {/* True/False Options */}
           {editingQuestion.type === "TRUE_FALSE" && (
             <div className="mb-3">
               <Form.Label>Correct Answer</Form.Label>
@@ -237,7 +237,6 @@ const updateEditingQuestion = (field: string, value: string | number | boolean |
             </div>
           )}
 
-          {/* Fill in the Blank Options */}
           {editingQuestion.type === "FILL_IN_BLANK" && (
             <div className="mb-3">
               <Form.Label>Possible Correct Answers (case-insensitive)</Form.Label>
@@ -325,11 +324,11 @@ const updateEditingQuestion = (field: string, value: string | number | boolean |
         <p className="text-muted">No questions yet. Click &quot;New Question&quot; to add one.</p>
       )}
 
-      {quiz.questions.map((question: Question) =>
-        editingId === question._id
-          ? renderQuestionEditor()
-          : renderQuestionPreview(question)
-      )}
+     {quiz.questions.map((question: Question) =>
+  editingId === question._id
+    ? <div key={question._id}>{renderQuestionEditor()}</div>
+    : renderQuestionPreview(question)
+)}
 
       {editingId && !quiz.questions.find((q: Question) => q._id === editingId) && renderQuestionEditor()}
     </div>
