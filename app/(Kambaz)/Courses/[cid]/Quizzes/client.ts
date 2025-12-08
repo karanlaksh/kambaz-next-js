@@ -92,6 +92,42 @@ export const updateQuestion = async (
   return response.data;
 };
 
-export const deleteQuestion = async (quizId: string, questionId: string): Promise<void> => {
-  await axios.delete(`${QUIZZES_API}/${quizId}/questions/${questionId}`);
+// ==================== ATTEMPT API ====================
+
+export interface Answer {
+  questionId: string;
+  answer: string | boolean | null;
+  isCorrect?: boolean;
+  pointsEarned?: number;
+}
+
+export interface Attempt {
+  _id: string;
+  quiz: string;
+  user: string;
+  answers: Answer[];
+  score: number;
+  totalPoints: number;
+  attemptNumber: number;
+  submittedAt: string;
+}
+
+export const findAttemptsForQuiz = async (quizId: string): Promise<Attempt[]> => {
+  const response = await axios.get(`${QUIZZES_API}/${quizId}/attempts`, { withCredentials: true });
+  return response.data;
+};
+
+export const findLatestAttempt = async (quizId: string): Promise<Attempt | null> => {
+  const response = await axios.get(`${QUIZZES_API}/${quizId}/attempts/latest`, { withCredentials: true });
+  return response.data;
+};
+
+export const countAttempts = async (quizId: string): Promise<number> => {
+  const response = await axios.get(`${QUIZZES_API}/${quizId}/attempts/count`, { withCredentials: true });
+  return response.data.count;
+};
+
+export const submitAttempt = async (quizId: string, answers: Answer[]): Promise<Attempt> => {
+  const response = await axios.post(`${QUIZZES_API}/${quizId}/attempts`, { answers }, { withCredentials: true });
+  return response.data;
 };
