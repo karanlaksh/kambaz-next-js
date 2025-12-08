@@ -69,10 +69,10 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
     setQuiz({ ...quiz, questions: updatedQuestions, points: totalPoints });
   };
 
-  const updateEditingQuestion = (field: string, value: any) => {
-    if (!editingQuestion) return;
-    setEditingQuestion({ ...editingQuestion, [field]: value });
-  };
+const updateEditingQuestion = (field: string, value: string | number | boolean | Choice[]) => {
+  if (!editingQuestion) return;
+  setEditingQuestion({ ...editingQuestion, [field]: value });
+};
 
   // Choice handlers for Multiple Choice
   const addChoice = () => {
@@ -84,19 +84,19 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
     });
   };
 
-  const updateChoice = (choiceId: string, field: string, value: any) => {
-    if (!editingQuestion) return;
-    const updatedChoices = editingQuestion.choices.map((c: Choice) =>
-      c._id === choiceId ? { ...c, [field]: value } : c
-    );
-    // If setting isCorrect to true, set others to false (single correct answer)
-    if (field === "isCorrect" && value === true) {
-      updatedChoices.forEach((c: Choice) => {
-        if (c._id !== choiceId) c.isCorrect = false;
-      });
-    }
-    setEditingQuestion({ ...editingQuestion, choices: updatedChoices });
-  };
+  const updateChoice = (choiceId: string, field: string, value: string | boolean) => {
+  if (!editingQuestion) return;
+  const updatedChoices = editingQuestion.choices.map((c: Choice) =>
+    c._id === choiceId ? { ...c, [field]: value } : c
+  );
+  // If setting isCorrect to true, set others to false (single correct answer)
+  if (field === "isCorrect" && value === true) {
+    updatedChoices.forEach((c: Choice) => {
+      if (c._id !== choiceId) c.isCorrect = false;
+    });
+  }
+  setEditingQuestion({ ...editingQuestion, choices: updatedChoices });
+};
 
   const removeChoice = (choiceId: string) => {
     if (!editingQuestion) return;

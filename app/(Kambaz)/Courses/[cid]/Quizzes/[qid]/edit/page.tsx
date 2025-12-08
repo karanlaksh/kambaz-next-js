@@ -32,7 +32,7 @@ export default function QuizEditor() {
     fetchQuiz();
   }, [qid]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     if (!quiz) return;
     setQuiz({ ...quiz, [field]: value });
   };

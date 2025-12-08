@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Button, Card, Form, Row, Col } from "react-bootstrap";
 import { FaPlus, FaTrash, FaPencilAlt } from "react-icons/fa";
-import { Quiz, Question, Choice } from "../../client";
-import * as client from "../../client";
+import { Quiz, Question, Choice } from "../client";
+import * as client from "../client";
 import { v4 as uuidv4 } from "uuid";
 
 interface Props {
@@ -69,10 +69,10 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
     setQuiz({ ...quiz, questions: updatedQuestions, points: totalPoints });
   };
 
-  const updateEditingQuestion = (field: string, value: any) => {
-    if (!editingQuestion) return;
-    setEditingQuestion({ ...editingQuestion, [field]: value });
-  };
+ const updateEditingQuestion = (field: string, value: string | number | boolean | Choice[] | string[]) => {
+  if (!editingQuestion) return;
+  setEditingQuestion({ ...editingQuestion, [field]: value });
+};
 
   // Choice handlers for Multiple Choice
   const addChoice = () => {
@@ -84,19 +84,19 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
     });
   };
 
-  const updateChoice = (choiceId: string, field: string, value: any) => {
-    if (!editingQuestion) return;
-    const updatedChoices = editingQuestion.choices.map((c) =>
-      c._id === choiceId ? { ...c, [field]: value } : c
-    );
-    // If setting isCorrect to true, set others to false (single correct answer)
-    if (field === "isCorrect" && value === true) {
-      updatedChoices.forEach((c) => {
-        if (c._id !== choiceId) c.isCorrect = false;
-      });
-    }
-    setEditingQuestion({ ...editingQuestion, choices: updatedChoices });
-  };
+ const updateChoice = (choiceId: string, field: string, value: string | boolean) => {
+  if (!editingQuestion) return;
+  const updatedChoices = editingQuestion.choices.map((c: Choice) =>
+    c._id === choiceId ? { ...c, [field]: value } : c
+  );
+  // If setting isCorrect to true, set others to false (single correct answer)
+  if (field === "isCorrect" && value === true) {
+    updatedChoices.forEach((c: Choice) => {
+      if (c._id !== choiceId) c.isCorrect = false;
+    });
+  }
+  setEditingQuestion({ ...editingQuestion, choices: updatedChoices });
+};
 
   const removeChoice = (choiceId: string) => {
     if (!editingQuestion) return;
@@ -321,9 +321,9 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
         </Button>
       </div>
 
-      {quiz.questions.length === 0 && (
-        <p className="text-muted">No questions yet. Click "New Question" to add one.</p>
-      )}
+     {quiz.questions.length === 0 && (
+  <p className="text-muted">No questions yet. Click &quot;New Question&quot; to add one.</p>
+)}
 
       {quiz.questions.map((question) =>
         editingId === question._id
