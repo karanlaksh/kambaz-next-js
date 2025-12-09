@@ -63,7 +63,7 @@ export default function Quizzes() {
       assignmentGroup: "QUIZZES",
     });
     dispatch(setQuizzes([...quizzes, newQuiz]));
-    router.push(`/Kambaz/Courses/${cid}/Quizzes/${newQuiz._id}`);
+    router.push(`/Courses/${cid}/Quizzes/${newQuiz._id}`);
   };
 
   const handleDeleteClick = (quizId: string) => {
@@ -158,7 +158,7 @@ export default function Quizzes() {
                   <FaRocket className="me-2 text-success" />
                   <div>
                     <a
-                      href={`/Kambaz/Courses/${cid}/Quizzes/${quiz._id}`}
+                      href={`/Courses/${cid}/Quizzes/${quiz._id}`}
                       className="fw-bold text-decoration-none text-dark"
                     >
                       {quiz.title}
@@ -208,7 +208,7 @@ export default function Quizzes() {
                       </Dropdown.Toggle>
                       <Dropdown.Menu>
                         <Dropdown.Item
-                          onClick={() => router.push(`/Kambaz/Courses/${cid}/Quizzes/${quiz._id}/edit`)}
+                          onClick={() => router.push(`/Courses/${cid}/Quizzes/${quiz._id}/edit`)}
                         >
                           Edit
                         </Dropdown.Item>
