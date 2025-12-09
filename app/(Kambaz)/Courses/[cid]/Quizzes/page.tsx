@@ -19,6 +19,7 @@ export default function Quizzes() {
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
+  const [attemptScores, setAttemptScores] = useState<Record<string, number>>({});
 
   const isFaculty = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
 
@@ -27,9 +28,32 @@ export default function Quizzes() {
     dispatch(setQuizzes(data));
   };
 
+  const fetchStudentScores = async (quizList: Quiz[]) => {
+    if (isFaculty) return;
+    
+    const scores: Record<string, number> = {};
+    for (const quiz of quizList) {
+      try {
+        const attempts = await client.findAttemptsForQuiz(quiz._id);
+        if (attempts.length > 0) {
+          scores[quiz._id] = attempts[0].score;
+        }
+      } catch (error) {
+        console.error("Error fetching attempts:", error);
+      }
+    }
+    setAttemptScores(scores);
+  };
+
   useEffect(() => {
     fetchQuizzes();
   }, [cid]);
+
+  useEffect(() => {
+    if (quizzes.length > 0 && !isFaculty) {
+      fetchStudentScores(quizzes);
+    }
+  }, [quizzes, isFaculty]);
 
   const handleAddQuiz = async () => {
     const newQuiz = await client.createQuiz(cid as string, {
@@ -39,7 +63,7 @@ export default function Quizzes() {
       assignmentGroup: "QUIZZES",
     });
     dispatch(setQuizzes([...quizzes, newQuiz]));
-    router.push(`/Courses/${cid}/Quizzes/${newQuiz._id}`);
+    router.push(`/Kambaz/Courses/${cid}/Quizzes/${newQuiz._id}`);
   };
 
   const handleDeleteClick = (quizId: string) => {
@@ -134,7 +158,7 @@ export default function Quizzes() {
                   <FaRocket className="me-2 text-success" />
                   <div>
                     <a
-                      href={`/Courses/${cid}/Quizzes/${quiz._id}`}
+                      href={`/Kambaz/Courses/${cid}/Quizzes/${quiz._id}`}
                       className="fw-bold text-decoration-none text-dark"
                     >
                       {quiz.title}
@@ -146,6 +170,11 @@ export default function Quizzes() {
                       )}
                       <span className="me-2">| {quiz.points} pts</span>
                       <span>| {quiz.questions?.length || 0} Questions</span>
+                      {!isFaculty && attemptScores[quiz._id] !== undefined && (
+                        <span className="ms-2 text-primary fw-bold">
+                          | Score: {attemptScores[quiz._id]}%
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -179,7 +208,7 @@ export default function Quizzes() {
                       </Dropdown.Toggle>
                       <Dropdown.Menu>
                         <Dropdown.Item
-                          onClick={() => router.push(`/Courses/${cid}/Quizzes/${quiz._id}/edit`)}
+                          onClick={() => router.push(`/Kambaz/Courses/${cid}/Quizzes/${quiz._id}/edit`)}
                         >
                           Edit
                         </Dropdown.Item>
