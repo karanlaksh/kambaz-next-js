@@ -19,7 +19,7 @@ export default function Quizzes() {
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
-  const [attemptScores, setAttemptScores] = useState<Record<string, number>>({});
+  const [attemptScores, setAttemptScores] = useState<Record<string, { score: number; totalPoints: number }>>({});
 
   const isFaculty = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
 
@@ -31,12 +31,15 @@ export default function Quizzes() {
   const fetchStudentScores = async (quizList: Quiz[]) => {
     if (isFaculty) return;
     
-    const scores: Record<string, number> = {};
+    const scores: Record<string, { score: number; totalPoints: number }> = {};
     for (const quiz of quizList) {
       try {
         const attempts = await client.findAttemptsForQuiz(quiz._id);
         if (attempts.length > 0) {
-          scores[quiz._id] = attempts[0].score;
+          scores[quiz._id] = {
+            score: attempts[0].score,
+            totalPoints: attempts[0].totalPoints,
+          };
         }
       } catch (error) {
         console.error("Error fetching attempts:", error);
@@ -172,7 +175,7 @@ export default function Quizzes() {
                       <span>| {quiz.questions?.length || 0} Questions</span>
                       {!isFaculty && attemptScores[quiz._id] !== undefined && (
                         <span className="ms-2 text-primary fw-bold">
-                          | Score: {attemptScores[quiz._id]}%
+                          | Score: {attemptScores[quiz._id].score} / {attemptScores[quiz._id].totalPoints} pts
                         </span>
                       )}
                     </div>
