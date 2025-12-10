@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button, Card, Form, Row, Col } from "react-bootstrap";
 import { FaPlus, FaTrash, FaPencilAlt } from "react-icons/fa";
-import { Quiz, Question, Choice } from "../../client";
+import { Quiz, Question, Choice, Blank } from "../../client";
 import * as client from "../../client";
 import { v4 as uuidv4 } from "uuid";
 
@@ -16,7 +16,6 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
-  // Guard check
   if (!quiz || !quiz.questions) {
     return <div className="p-3">Loading questions...</div>;
   }
@@ -32,6 +31,7 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
         { _id: uuidv4(), text: "Option 2", isCorrect: false },
       ],
       correctAnswer: true,
+      blanks: [],
       blankAnswers: [],
     };
     const created = await client.addQuestion(quiz._id, newQuestion);
@@ -47,7 +47,11 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
 
   const handleEditClick = (question: Question) => {
     setEditingId(question._id);
-    setEditingQuestion({ ...question });
+    let blanks = question.blanks || [];
+    if (blanks.length === 0 && question.blankAnswers && question.blankAnswers.length > 0) {
+      blanks = [{ _id: uuidv4(), answers: question.blankAnswers }];
+    }
+    setEditingQuestion({ ...question, blanks });
   };
 
   const handleCancelEdit = () => {
@@ -74,7 +78,7 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
     setQuiz({ ...quiz, questions: updatedQuestions, points: totalPoints });
   };
 
-  const updateEditingQuestion = (field: string, value: string | number | boolean | Choice[] | string[]) => {
+  const updateEditingQuestion = (field: string, value: unknown) => {
     if (!editingQuestion) return;
     setEditingQuestion({ ...editingQuestion, [field]: value });
   };
@@ -109,27 +113,53 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
     });
   };
 
-  const addBlankAnswer = () => {
+  const addBlank = () => {
     if (!editingQuestion) return;
+    const newBlank: Blank = { _id: uuidv4(), answers: [""] };
     setEditingQuestion({
       ...editingQuestion,
-      blankAnswers: [...editingQuestion.blankAnswers, ""],
+      blanks: [...(editingQuestion.blanks || []), newBlank],
     });
   };
 
-  const updateBlankAnswer = (index: number, value: string) => {
-    if (!editingQuestion) return;
-    const updated = [...editingQuestion.blankAnswers];
-    updated[index] = value;
-    setEditingQuestion({ ...editingQuestion, blankAnswers: updated });
-  };
-
-  const removeBlankAnswer = (index: number) => {
+  const removeBlank = (blankId: string) => {
     if (!editingQuestion) return;
     setEditingQuestion({
       ...editingQuestion,
-      blankAnswers: editingQuestion.blankAnswers.filter((_: string, i: number) => i !== index),
+      blanks: editingQuestion.blanks.filter((b: Blank) => b._id !== blankId),
     });
+  };
+
+  const addAnswerToBlank = (blankId: string) => {
+    if (!editingQuestion) return;
+    const updatedBlanks = editingQuestion.blanks.map((b: Blank) =>
+      b._id === blankId ? { ...b, answers: [...b.answers, ""] } : b
+    );
+    setEditingQuestion({ ...editingQuestion, blanks: updatedBlanks });
+  };
+
+  const updateBlankAnswer = (blankId: string, answerIndex: number, value: string) => {
+    if (!editingQuestion) return;
+    const updatedBlanks = editingQuestion.blanks.map((b: Blank) => {
+      if (b._id === blankId) {
+        const newAnswers = [...b.answers];
+        newAnswers[answerIndex] = value;
+        return { ...b, answers: newAnswers };
+      }
+      return b;
+    });
+    setEditingQuestion({ ...editingQuestion, blanks: updatedBlanks });
+  };
+
+  const removeAnswerFromBlank = (blankId: string, answerIndex: number) => {
+    if (!editingQuestion) return;
+    const updatedBlanks = editingQuestion.blanks.map((b: Blank) => {
+      if (b._id === blankId) {
+        return { ...b, answers: b.answers.filter((_, i) => i !== answerIndex) };
+      }
+      return b;
+    });
+    setEditingQuestion({ ...editingQuestion, blanks: updatedBlanks });
   };
 
   const renderQuestionEditor = () => {
@@ -177,6 +207,9 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
               rows={3}
               value={editingQuestion.question}
               onChange={(e) => updateEditingQuestion("question", e.target.value)}
+              placeholder={editingQuestion.type === "FILL_IN_BLANK" 
+                ? "e.g., The capital of France is ____ and Spain is ____." 
+                : "Enter your question here..."}
             />
           </Form.Group>
 
@@ -199,11 +232,7 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
                     placeholder="Answer text"
                     className={choice.isCorrect ? "border-success" : ""}
                   />
-                  <Button
-                    variant="link"
-                    className="text-danger"
-                    onClick={() => removeChoice(choice._id)}
-                  >
+                  <Button variant="link" className="text-danger" onClick={() => removeChoice(choice._id)}>
                     <FaTrash />
                   </Button>
                 </div>
@@ -239,77 +268,87 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
 
           {editingQuestion.type === "FILL_IN_BLANK" && (
             <div className="mb-3">
-              <Form.Label>Possible Correct Answers (case-insensitive)</Form.Label>
-              {editingQuestion.blankAnswers.map((answer: string, index: number) => (
-                <div key={index} className="d-flex align-items-center mb-2">
-                  <span className="me-2">Possible Answer:</span>
-                  <Form.Control
-                    type="text"
-                    value={answer}
-                    onChange={(e) => updateBlankAnswer(index, e.target.value)}
-                    style={{ width: "200px" }}
-                  />
-                  <Button
-                    variant="link"
-                    className="text-danger"
-                    onClick={() => removeBlankAnswer(index)}
-                  >
-                    <FaTrash />
-                  </Button>
-                </div>
+              <Form.Label>Blanks (in order they appear in the question)</Form.Label>
+              <p className="text-muted small">
+                Add blanks in the same order as they appear in your question text. Each blank can have multiple correct answers (case-insensitive).
+              </p>
+              
+              {(editingQuestion.blanks || []).map((blank: Blank, blankIndex: number) => (
+                <Card key={blank._id} className="mb-3 bg-light">
+                  <Card.Body>
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <strong>Blank {blankIndex + 1}</strong>
+                      <Button variant="outline-danger" size="sm" onClick={() => removeBlank(blank._id)}>
+                        <FaTrash className="me-1" /> Remove Blank
+                      </Button>
+                    </div>
+                    
+                    <Form.Label className="small">Correct Answers:</Form.Label>
+                    {blank.answers.map((answer: string, answerIndex: number) => (
+                      <div key={answerIndex} className="d-flex align-items-center mb-2">
+                        <Form.Control
+                          type="text"
+                          value={answer}
+                          onChange={(e) => updateBlankAnswer(blank._id, answerIndex, e.target.value)}
+                          placeholder={`Correct answer ${answerIndex + 1}`}
+                          style={{ width: "250px" }}
+                        />
+                        <Button
+                          variant="link"
+                          className="text-danger"
+                          onClick={() => removeAnswerFromBlank(blank._id, answerIndex)}
+                          disabled={blank.answers.length <= 1}
+                        >
+                          <FaTrash />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button variant="link" onClick={() => addAnswerToBlank(blank._id)} className="p-0 small">
+                      <FaPlus className="me-1" /> Add Another Answer
+                    </Button>
+                  </Card.Body>
+                </Card>
               ))}
-              <Button variant="link" onClick={addBlankAnswer} className="p-0">
-                <FaPlus className="me-1" /> Add Another Answer
+              
+              <Button variant="outline-primary" onClick={addBlank}>
+                <FaPlus className="me-1" /> Add Blank
               </Button>
             </div>
           )}
 
           <div className="d-flex gap-2">
-            <Button variant="secondary" onClick={handleCancelEdit}>
-              Cancel
-            </Button>
-            <Button variant="danger" onClick={handleSaveQuestion}>
-              Update Question
-            </Button>
+            <Button variant="secondary" onClick={handleCancelEdit}>Cancel</Button>
+            <Button variant="danger" onClick={handleSaveQuestion}>Update Question</Button>
           </div>
         </Card.Body>
       </Card>
     );
   };
 
-  const renderQuestionPreview = (question: Question) => {
-    return (
-      <Card key={question._id} className="mb-3">
-        <Card.Body>
-          <div className="d-flex justify-content-between align-items-start">
-            <div>
-              <h6>{question.title}</h6>
-              <p className="text-muted mb-1">{question.question}</p>
-              <small className="text-muted">
-                {question.type.replace(/_/g, " ")} | {question.points} pts
-              </small>
-            </div>
-            <div>
-              <Button
-                variant="link"
-                className="text-secondary"
-                onClick={() => handleEditClick(question)}
-              >
-                <FaPencilAlt />
-              </Button>
-              <Button
-                variant="link"
-                className="text-danger"
-                onClick={() => handleDeleteQuestion(question._id)}
-              >
-                <FaTrash />
-              </Button>
-            </div>
+  const renderQuestionPreview = (question: Question) => (
+    <Card key={question._id} className="mb-3">
+      <Card.Body>
+        <div className="d-flex justify-content-between align-items-start">
+          <div>
+            <h6>{question.title}</h6>
+            <p className="text-muted mb-1">{question.question}</p>
+            <small className="text-muted">
+              {question.type.replace(/_/g, " ")} | {question.points} pts
+              {question.type === "FILL_IN_BLANK" && question.blanks && ` | ${question.blanks.length} blank(s)`}
+            </small>
           </div>
-        </Card.Body>
-      </Card>
-    );
-  };
+          <div>
+            <Button variant="link" className="text-secondary" onClick={() => handleEditClick(question)}>
+              <FaPencilAlt />
+            </Button>
+            <Button variant="link" className="text-danger" onClick={() => handleDeleteQuestion(question._id)}>
+              <FaTrash />
+            </Button>
+          </div>
+        </div>
+      </Card.Body>
+    </Card>
+  );
 
   return (
     <div>
@@ -324,11 +363,11 @@ export default function QuestionsEditor({ quiz, setQuiz }: Props) {
         <p className="text-muted">No questions yet. Click &quot;New Question&quot; to add one.</p>
       )}
 
-     {quiz.questions.map((question: Question) =>
-  editingId === question._id
-    ? <div key={question._id}>{renderQuestionEditor()}</div>
-    : renderQuestionPreview(question)
-)}
+      {quiz.questions.map((question: Question) =>
+        editingId === question._id
+          ? <div key={question._id}>{renderQuestionEditor()}</div>
+          : renderQuestionPreview(question)
+      )}
 
       {editingId && !quiz.questions.find((q: Question) => q._id === editingId) && renderQuestionEditor()}
     </div>

@@ -84,13 +84,28 @@ export default function QuizEditor() {
 
             {/* Description */}
             <Form.Group className="mb-3">
-              <Form.Label>Quiz Instructions</Form.Label>
+              <Form.Label>Description</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
                 value={quiz.description}
                 onChange={(e) => handleChange("description", e.target.value)}
               />
+            </Form.Group>
+
+            {/* Points - Read Only (calculated from questions) */}
+            <Form.Group className="mb-3">
+              <Form.Label>Points</Form.Label>
+              <Form.Control
+                type="number"
+                value={quiz.points}
+                readOnly
+                disabled
+                className="bg-light"
+              />
+              <Form.Text className="text-muted">
+                Auto-calculated from question points
+              </Form.Text>
             </Form.Group>
 
             <Row>

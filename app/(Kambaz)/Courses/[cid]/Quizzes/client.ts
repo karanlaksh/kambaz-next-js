@@ -10,6 +10,11 @@ export interface Choice {
   isCorrect: boolean;
 }
 
+export interface Blank {
+  _id: string;
+  answers: string[];
+}
+
 export interface Question {
   _id: string;
   title: string;
@@ -17,8 +22,9 @@ export interface Question {
   points: number;
   question: string;
   choices: Choice[];
-  correctAnswer: boolean; // For TRUE_FALSE
-  blankAnswers: string[]; // For FILL_IN_BLANK
+  correctAnswer: boolean;
+  blankAnswers: string[];
+  blanks: Blank[];
 }
 
 export interface Quiz {
@@ -100,7 +106,7 @@ export const deleteQuestion = async (quizId: string, questionId: string): Promis
 
 export interface Answer {
   questionId: string;
-  answer: string | boolean | null;
+  answer: string | boolean | string[] | null;
   isCorrect?: boolean;
   pointsEarned?: number;
 }
