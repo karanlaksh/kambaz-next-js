@@ -30,7 +30,13 @@ export default function Modules() {
   const courseId = Array.isArray(cid) ? cid[0] : (cid as string);
   const [moduleName, setModuleName] = useState("");
   const { modules } = useSelector((state: RootState) => state.modulesReducer);
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const dispatch = useDispatch();
+
+  // Role check - only Faculty and Admin can do CRUD (case-insensitive)
+  const isFaculty = 
+    currentUser?.role?.toUpperCase() === "FACULTY" || 
+    currentUser?.role?.toUpperCase() === "ADMIN";
 
   const fetchModules = async () => {
     const modules = await coursesClient.findModulesForCourse(courseId);
@@ -64,11 +70,14 @@ export default function Modules() {
 
   return (
     <div className="container-fluid p-3" id="wd-modules-page">
-      <ModulesControls
-        moduleName={moduleName}
-        setModuleName={setModuleName}
-        addModule={onCreateModuleForCourse}
-      />
+      {/* Only show ModulesControls for Faculty/Admin */}
+      {isFaculty && (
+        <ModulesControls
+          moduleName={moduleName}
+          setModuleName={setModuleName}
+          addModule={onCreateModuleForCourse}
+        />
+      )}
       <br />
       <br />
 
@@ -100,11 +109,14 @@ export default function Modules() {
                   />
                 )}
               </div>
-              <ModuleControlButtons
-                moduleId={moduleItem._id}
-                deleteModule={(moduleId) => onRemoveModule(moduleId)}
-                editModule={(moduleId) => dispatch(editModule(moduleId))}
-              />
+              {/* Only show ModuleControlButtons for Faculty/Admin */}
+              {isFaculty && (
+                <ModuleControlButtons
+                  moduleId={moduleItem._id}
+                  deleteModule={(moduleId) => onRemoveModule(moduleId)}
+                  editModule={(moduleId) => dispatch(editModule(moduleId))}
+                />
+              )}
             </div>
 
             {moduleItem.lessons && moduleItem.lessons.length > 0 && (
@@ -117,7 +129,8 @@ export default function Modules() {
                     <div>
                       <BsGripVertical className="me-2 fs-3" /> {lesson.name}
                     </div>
-                    <LessonControlButtons />
+                    {/* Only show LessonControlButtons for Faculty/Admin */}
+                    {isFaculty && <LessonControlButtons />}
                   </ListGroupItem>
                 ))}
               </ListGroup>

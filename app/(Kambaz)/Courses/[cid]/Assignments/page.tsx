@@ -33,11 +33,19 @@ export default function Assignments() {
   const { assignments } = useSelector(
     (state: RootState) => state.assignmentsReducer
   );
+  const { currentUser } = useSelector(
+    (state: RootState) => state.accountReducer
+  );
   const dispatch = useDispatch();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(
     null
   );
+
+  // Role check - only Faculty and Admin can do CRUD (case-insensitive)
+  const isFaculty = 
+    currentUser?.role?.toUpperCase() === "FACULTY" || 
+    currentUser?.role?.toUpperCase() === "ADMIN";
 
   const fetchAssignments = async () => {
     const assignments = await client.findAssignmentsForCourse(cid as string);
@@ -84,24 +92,27 @@ export default function Assignments() {
           />
         </InputGroup>
 
-        <div>
-          <Button
-            variant="secondary"
-            className="me-2 text-nowrap"
-            id="wd-add-assignment-group"
-          >
-            <FaPlus className="me-2" /> Group
-          </Button>
-          <Link href={`/Courses/${cid}/Assignments/new`}>
+        {/* Only show Add buttons for Faculty/Admin */}
+        {isFaculty && (
+          <div>
             <Button
-              variant="danger"
-              className="text-nowrap"
-              id="wd-add-assignment"
+              variant="secondary"
+              className="me-2 text-nowrap"
+              id="wd-add-assignment-group"
             >
-              <FaPlus className="me-2" /> Assignment
+              <FaPlus className="me-2" /> Group
             </Button>
-          </Link>
-        </div>
+            <Link href={`/Courses/${cid}/Assignments/new`}>
+              <Button
+                variant="danger"
+                className="text-nowrap"
+                id="wd-add-assignment"
+              >
+                <FaPlus className="me-2" /> Assignment
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="border rounded">
@@ -113,7 +124,8 @@ export default function Assignments() {
           </div>
           <div className="text-secondary small">
             40% of Total
-            <FaPlus className="ms-3 text-secondary" />
+            {/* Only show Plus icon for Faculty/Admin */}
+            {isFaculty && <FaPlus className="ms-3 text-secondary" />}
             <FaEllipsisV className="ms-3 text-secondary" />
           </div>
         </div>
@@ -143,11 +155,14 @@ export default function Assignments() {
                     <b>Due</b> {assignment.due} | {assignment.points} pts
                   </div>
                 </div>
-                <FaTrash
-                  className="text-danger fs-5 ms-3 mt-1"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handleDeleteClick(assignment._id)}
-                />
+                {/* Only show Delete icon for Faculty/Admin */}
+                {isFaculty && (
+                  <FaTrash
+                    className="text-danger fs-5 ms-3 mt-1"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleDeleteClick(assignment._id)}
+                  />
+                )}
                 <FaCheckCircle className="text-success fs-5 ms-3 mt-1" />
                 <FaEllipsisV className="text-secondary fs-6 ms-3 mt-1" />
               </li>
